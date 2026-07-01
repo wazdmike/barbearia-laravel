@@ -155,3 +155,5 @@ php artisan serve
 ```
 php artisan test
 ```
+
+## As Skills podem ser encontradas em `./github/skills`
