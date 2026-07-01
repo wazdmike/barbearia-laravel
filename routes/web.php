@@ -23,10 +23,10 @@ Route::get('/', function () {
 // 2. Rotas de Autenticação e Registo (Apenas para utilizadores NÃO autenticados)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 });
 
 // 3. Rota de Logout (Apenas para utilizadores autenticados)

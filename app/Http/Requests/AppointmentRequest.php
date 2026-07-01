@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class AppointmentRequest extends FormRequest
 {
@@ -21,7 +22,7 @@ class AppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'barber_id' => 'required|exists:users,id',
+            'barber_id' => ['required', Rule::exists('users', 'id')->where('role', 'barber')],
             'service_id' => 'required|exists:services,id',
             'date_time' => 'required|date',
         ];

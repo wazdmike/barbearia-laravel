@@ -12,21 +12,11 @@ use Illuminate\Support\Facades\Hash;
 class BarberController extends Controller
 {
     /**
-     * Garante que apenas administradores acessem o painel de barbeiros.
-     */
-    private function checkAdmin(): void
-    {
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
-            abort(403, 'Acesso não autorizado. Apenas administradores podem gerenciar a equipe de barbeiros.');
-        }
-    }
-
-    /**
      * Exibe a listagem de todos os barbeiros registrados no sistema.
      */
     public function index(): View
     {
-        $this->checkAdmin();
+        $this->ensureAdmin();
 
         // Lista apenas os usuários que possuem a função de barbeiro
         $barbers = User::where('role', 'barber')->latest()->paginate(10);
@@ -39,7 +29,7 @@ class BarberController extends Controller
      */
     public function store(BarberRequest $request): RedirectResponse
     {
-        $this->checkAdmin();
+        $this->ensureAdmin();
 
         $validated = $request->validated();
 
@@ -59,7 +49,7 @@ class BarberController extends Controller
      */
     public function update(BarberRequest $request, User $barber): RedirectResponse
     {
-        $this->checkAdmin();
+        $this->ensureAdmin();
 
         // Impede que altere o perfil caso não seja barbeiro por segurança
         if ($barber->role !== 'barber') {
@@ -89,7 +79,7 @@ class BarberController extends Controller
      */
     public function destroy(User $barber): RedirectResponse
     {
-        $this->checkAdmin();
+        $this->ensureAdmin();
 
         if ($barber->role !== 'barber') {
             abort(400, 'Ação inválida.');

@@ -10,16 +10,9 @@ use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
 {
-    private function checkAdmin(): void
-    {
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
-            abort(403, 'Acesso não autorizado. Apenas administradores podem gerir os serviços.');
-        }
-    }
-
     public function index(): View
     {
-        $this->checkAdmin();
+        $this->ensureAdmin();
 
         $services = Service::latest()->paginate(10);
         return view('services.index', compact('services'));
@@ -27,7 +20,7 @@ class ServiceController extends Controller
 
     public function store(ServiceRequest $request): RedirectResponse
     {
-        $this->checkAdmin();
+        $this->ensureAdmin();
 
         Service::create($request->validated());
 
@@ -37,7 +30,7 @@ class ServiceController extends Controller
 
     public function update(ServiceRequest $request, Service $service): RedirectResponse
     {
-        $this->checkAdmin();
+        $this->ensureAdmin();
 
         $service->update($request->validated());
 
@@ -47,7 +40,7 @@ class ServiceController extends Controller
 
     public function destroy(Service $service): RedirectResponse
     {
-        $this->checkAdmin();
+        $this->ensureAdmin();
 
         if ($service->appointments()->exists()) {
             return redirect()->route('services.index')

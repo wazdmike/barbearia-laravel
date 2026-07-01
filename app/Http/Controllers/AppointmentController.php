@@ -43,15 +43,15 @@ class AppointmentController extends Controller
     {
         $validated = $request->validated();
         $dateTime = Carbon::parse($validated['date_time']);
+        $service = Service::findOrFail($validated['service_id']);
+        $endDateTime = $dateTime->copy()->addMinutes($service->duration_minutes);
 
-        // 1. Validação de Regra de Negócio: Não permitir agendamentos no passado
         if ($dateTime->isPast()) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Não é possível realizar um agendamento numa data ou hora passada.');
         }
 
-        // 2. Validação de Horário de Funcionamento (09:00 às 19:00)
         $hour = $dateTime->hour;
         if ($hour < 9 || $hour >= 19) {
             return redirect()->back()
@@ -59,19 +59,23 @@ class AppointmentController extends Controller
                 ->with('error', 'A barbearia apenas funciona entre as 09:00 e as 19:00.');
         }
 
-        // 3. Validação de Conflito de Agenda (Evita duplicados para o mesmo barbeiro no mesmo horário)
-        $conflict = Appointment::where('barber_id', $validated['barber_id'])
-            ->where('date_time', $validated['date_time'])
+        $existingAppointments = Appointment::where('barber_id', $validated['barber_id'])
             ->where('status', '!=', 'canceled')
-            ->exists();
+            ->whereDate('date_time', $dateTime->toDateString())
+            ->with('service')
+            ->get();
 
-        if ($conflict) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'O barbeiro selecionado já possui um agendamento marcado para este horário.');
+        foreach ($existingAppointments as $existingAppointment) {
+            $existingStart = $existingAppointment->date_time;
+            $existingEnd = $existingStart->copy()->addMinutes($existingAppointment->service->duration_minutes);
+
+            if ($dateTime->lt($existingEnd) && $endDateTime->gt($existingStart)) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'O barbeiro selecionado já possui um agendamento marcado para este horário.');
+            }
         }
 
-        // Cria o agendamento associando o utilizador logado como cliente
         Appointment::create([
             'client_id' => Auth::id(),
             'barber_id' => $validated['barber_id'],
