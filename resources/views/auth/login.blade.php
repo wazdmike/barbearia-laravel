@@ -10,7 +10,7 @@
 
 <body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
     <div
-        class="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.25),_transparent_35%),linear-gradient(135deg,_#09090b_0%,_#18181b_100%)] px-4 py-10">
+        class="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.25),transparent_35%),linear-gradient(135deg,#09090b_0%,#18181b_100%)] px-4 py-10">
         <div
             class="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900/90 p-8 shadow-2xl shadow-black/40 backdrop-blur">
             <div class="mb-8 text-center">
