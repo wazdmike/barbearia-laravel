@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\Service;
 use App\Models\User;
 use App\Http\Requests\AppointmentRequest;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -84,7 +85,7 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Cancela um agendamento existente de forma segura.
+     * Cancela um agendamento existente (Ação do Cliente).
      */
     public function destroy(Appointment $appointment): RedirectResponse
     {
@@ -93,10 +94,61 @@ class AppointmentController extends Controller
             abort(403, 'Ação não autorizada.');
         }
 
-        // Em vez de apagar fisicamente, alteramos o estado para cancelado
+        // Em vez de apagar fisicamente, alteramos o estado para cancelado para fins de histórico
         $appointment->update(['status' => 'canceled']);
 
         return redirect()->route('appointments.index')
             ->with('success', 'Marcação cancelada com sucesso.');
+    }
+
+    /**
+     * Atualiza o status do agendamento (Ação do Administrador ou Barbeiro).
+     */
+    public function updateStatus(Request $request, Appointment $appointment): RedirectResponse
+    {
+        $user = Auth::user();
+        if ($user->role !== 'admin' && $user->role !== 'barber') {
+            abort(403, 'Acesso não autorizado.');
+        }
+
+        // Se for um barbeiro comum, ele só pode alterar a agenda dele mesmo
+        if ($user->role === 'barber' && $appointment->barber_id !== $user->id) {
+            abort(403, 'Você só pode gerenciar os seus próprios atendimentos.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:pending,confirmed,completed,canceled'
+        ]);
+
+        $appointment->update(['status' => $validated['status']]);
+
+        return redirect()->back()->with('success', 'O status do agendamento foi alterado para ' . $this->translateStatus($validated['status']) . '!');
+    }
+
+    /**
+     * Exclui definitivamente um agendamento do banco de dados (Ação exclusiva do Administrador).
+     */
+    public function forceDelete(Appointment $appointment): RedirectResponse
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Apenas administradores podem remover permanentemente registros do sistema.');
+        }
+
+        $appointment->delete();
+
+        return redirect()->back()->with('success', 'Agendamento excluído do sistema permanentemente.');
+    }
+
+    /**
+     * Método auxiliar para tradução de termos de status na mensagem de retorno.
+     */
+    private function translateStatus(string $status): string
+    {
+        return [
+            'pending' => 'Pendente',
+            'confirmed' => 'Confirmado',
+            'completed' => 'Concluído',
+            'canceled' => 'Cancelado'
+        ][$status] ?? $status;
     }
 }

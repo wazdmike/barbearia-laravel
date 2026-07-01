@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ServiceController;
@@ -12,6 +11,10 @@ use App\Models\Appointment;
 |--------------------------------------------------------------------------
 | Rotas da Aplicação - BarberVibe
 |--------------------------------------------------------------------------
+|
+| Aqui são registadas todas as rotas da aplicação. Estas rotas são carregadas
+| pelo RouteServaiceProvider e todas receberão o grupo de middleware "web".
+|
 */
 
 // 1. Rota da Página Inicial (Landing Page)
@@ -31,10 +34,20 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // 4. Rotas Protegidas (Requer login ativo)
 Route::middleware(['auth'])->group(function () {
 
-    // CRUD e Painel de Agendamentos (Gerido de forma completa pelo AppointmentController)
+    // CRUD e Painel de Agendamentos (Cliente)
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
     Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
     Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
+
+    // --------------------------------------------------------------------------
+    // NOVAS ROTAS DE GESTÃO (Status e Eliminação Permanente)
+    // --------------------------------------------------------------------------
+    // Rota PATCH para atualizar o status do agendamento (Confirmado, Concluído, Cancelado)
+    Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
+    
+    // Rota DELETE para remover fisicamente um agendamento do banco de dados (Apenas Admin)
+    Route::delete('/appointments/{appointment}/force', [AppointmentController::class, 'forceDelete'])->name('appointments.forceDelete');
+    // --------------------------------------------------------------------------
 
     // Painel de Gestão (Administração e escala dos Barbeiros)
     Route::get('/management', function (Request $request) {
