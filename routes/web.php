@@ -5,28 +5,27 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\BarberController;
 use App\Models\Appointment;
 
 /*
 |--------------------------------------------------------------------------
 | Rotas da Aplicação - BarberVibe
 |--------------------------------------------------------------------------
-|
-| Aqui são registadas todas as rotas da aplicação. Estas rotas são carregadas
-| pelo RouteServaiceProvider e todas receberão o grupo de middleware "web".
-|
 */
 
 // 1. Rota da Página Inicial (Landing Page)
 Route::get('/', function () {
-    return view('welcome');
+    $services = \App\Models\Service::all();
+    return view('welcome', compact('services'));
 })->name('home');
 
-// 2. Rotas de Autenticação (Apenas para utilizadores NÃO autenticados)
+// 2. Rotas de Autenticação e Registo (Apenas para utilizadores NÃO autenticados)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
-        Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
 
@@ -41,28 +40,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
     Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
 
-    // --------------------------------------------------------------------------
-    // NOVAS ROTAS DE GESTÃO (Status e Eliminação Permanente)
-    // --------------------------------------------------------------------------
-    // Rota PATCH para atualizar o status do agendamento (Confirmado, Concluído, Cancelado)
+    // Rotas de Gestão de Agendamentos (Status e Eliminação Permanente)
     Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
-
-    // Rota DELETE para remover fisicamente um agendamento do banco de dados (Apenas Admin)
     Route::delete('/appointments/{appointment}/force', [AppointmentController::class, 'forceDelete'])->name('appointments.forceDelete');
-    // --------------------------------------------------------------------------
 
-    // Painel de Gestão (Administração e escala dos Barbeiros)
+    // Painel de Gestão Principal (Administração e escala dos Barbeiros)
     Route::get('/management', function (Request $request) {
         $user = $request->user();
 
-        // Se for um cliente comum, redireciona para a agenda pessoal dele
         if ($user && $user->role === 'client') {
             return redirect()->route('appointments.index');
         }
 
         $query = Appointment::with(['client', 'barber', 'service']);
 
-        // Se for barbeiro, ele só consegue visualizar os agendamentos dele próprio
         if ($user && $user->role === 'barber') {
             $query->where('barber_id', $user->id);
         }
@@ -72,6 +63,9 @@ Route::middleware(['auth'])->group(function () {
         return view('management.index', compact('appointments'));
     })->name('management');
 
-    // CRUD de Serviços (Acesso controlado integrado no Controller)
+    // CRUD de Serviços (Exclusivo Admin)
     Route::resource('services', ServiceController::class);
+
+    // CRUD de Barbeiros (Exclusivo Admin)
+    Route::resource('barbers', BarberController::class)->except(['create', 'show', 'edit']);
 });

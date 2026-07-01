@@ -43,11 +43,18 @@
                 <h1 class="text-2xl font-bold text-zinc-100 mt-1">Agenda Geral de Atendimentos</h1>
             </div>
 
-            <!-- Botão de Gerenciamento de Serviços (Disponível apenas para Administradores) -->
+            <!-- Botões de Gerenciamento Administrativo (Apenas para Administradores) -->
             @if(auth()->user()->role === 'admin')
-                <div class="flex gap-3">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <!-- BOTÃO NOVO: Gerenciar Barbeiros -->
+                    <a href="{{ route('barbers.index') }}"
+                        class="inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-750 text-amber-500 border border-zinc-700 hover:border-amber-500 font-bold py-2.5 px-5 rounded-xl transition-all duration-200">
+                        <span>👥 Gerenciar Barbeiros</span>
+                    </a>
+
+                    <!-- Botão de Serviços existente -->
                     <a href="{{ route('services.index') }}"
-                        class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-[0.98]">
+                        class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-[0.98]">
                         <span>⚙️ Gerenciar Serviços</span>
                     </a>
                 </div>
