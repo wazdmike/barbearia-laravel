@@ -41,7 +41,7 @@
                             class="text-sm text-zinc-300 hover:text-amber-500 font-semibold transition-colors duration-200">
                             Entrar
                         </a>
-                        <a href="{{ route('login') }}"
+                        <a href="{{ route('register') }}"
                             class="text-sm bg-zinc-800 border border-zinc-700 hover:border-amber-500 hover:text-amber-400 text-zinc-300 py-2.5 px-4 rounded-xl transition-all duration-200">
                             Criar Conta
                         </a>

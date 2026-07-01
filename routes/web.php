@@ -26,6 +26,8 @@ Route::get('/', function () {
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+        Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
 });
 
 // 3. Rota de Logout (Apenas para utilizadores autenticados)
@@ -44,7 +46,7 @@ Route::middleware(['auth'])->group(function () {
     // --------------------------------------------------------------------------
     // Rota PATCH para atualizar o status do agendamento (Confirmado, Concluído, Cancelado)
     Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
-    
+
     // Rota DELETE para remover fisicamente um agendamento do banco de dados (Apenas Admin)
     Route::delete('/appointments/{appointment}/force', [AppointmentController::class, 'forceDelete'])->name('appointments.forceDelete');
     // --------------------------------------------------------------------------
