@@ -1,13 +1,21 @@
 {
-    "agents": [
-        "copilot"
-    ],
-    "cloud": false,
-    "guidelines": true,
-    "mcp": true,
-    "nightwatch": false,
-    "sail": false,
-    "skills": [
-        "laravel-best-practices"
+  "version": "1.0.0",
+  "project": {
+    "name": "BarberVibe",
+    "description": "Sistema de Gestão e Agendamento de Serviços para Barbearia"
+  },
+  "skills": {
+    "directory": ".github/skills",
+    "active": [
+      "laravel-best-practices",
+      "identidade-visual",
+      "crud",
+      "seguranca",
+      "testes"
     ]
+  },
+  "rules": {
+    "enforce_standards": true,
+    "strict_mode": true
+  }
 }
