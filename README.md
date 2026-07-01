@@ -1,58 +1,75 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BarberVibe é Premium Barber Shop Booking & Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Visão Geral
+BarberVibe é um sistema de agendamento e gestão para barbearias, criado como projeto acadêmico.
 
-## About Laravel
+- **Cliente**: realiza autocadastro, agenda seus serviços e pode cancelar suas próprias reservas.
+- **Barbeiro**: visualiza apenas sua agenda pessoal e atualiza o status dos atendimentos para **Confirmar**, **Recusar** ou **Concluir**.
+- **Administrador**: gerencia a equipe de barbeiros (CRUD), administra o catálogo de serviços (CRUD) e acompanha a agenda global sem restrições.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tecnologias
+- Laravel 12 (PHP 8.2+)
+- Blade Templates
+- Vite
+- Tailwind CSS (Tema Dark Premium)
+- MySQL (produção)
+- SQLite (memória para testes)
+- PHPUnit
+- Git / GitHub
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Modelação da Base de Dados
+A seguir, um diagrama textual simples das tabelas principais:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```
+users
+  - id (PK)
+  - name
+  - email
+  - password
+  - role
 
-## Learning Laravel
+services
+  - id (PK)
+  - name
+  - duration
+  - price
+  - description
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+appointments
+  - id (PK)
+  - user_id (FK -> users.id)
+  - service_id (FK -> services.id)
+  - barber_id (FK -> users.id)
+  - scheduled_at
+  - status
+  - created_at
+  - updated_at
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Passo a Passo de Instalação
+1. Instale as dependências do Laravel e do frontend:
+   - `composer install`
+   - `npm install`
+2. Configure o arquivo `.env` com o banco de dados e outras credenciais.
+3. Gere a chave da aplicação:
+   - `php artisan key:generate`
+4. Execute as migrações e os seeders:
+   - `php artisan migrate --seed`
+5. Inicie o Vite em modo de desenvolvimento:
+   - `npm run dev`
+6. Execute o servidor local:
+   - `php artisan serve`
 
-## Contributing
+## Contas de Teste
+| Perfil | E-mail | Senha |
+|---|---|---|
+| Administrador | admin@barbervibe.com.br | senha123 |
+| Barbeiro | barbeiro@barbervibe.com.br | senha123 |
+| Cliente | cliente@barbervibe.com.br | senha123 |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Testes
+O sistema inclui testes automatizados com **10 testes funcionais aprovados** e **31 asserções**, cobrindo:
+- proteção de rotas
+- redirecionamento dinâmico
+- validações de conflito de horário
+- validações de horário comercial
