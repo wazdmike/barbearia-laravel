@@ -1,204 +1,157 @@
 # Relatório Técnico de Desenvolvimento - BarberVibe
 
-Este documento apresenta o relatório técnico de desenvolvimento da aplicação BarberVibe, um sistema moderno de agendamento e gestão para barbearias, concebido como projeto académico para a disciplina de desenvolvimento de sistemas do IFSP.
+Este documento apresenta o relatário técnico de desenvolvimento da aplicação BarberVibe, um sistema de agendamento e gestão para barbearias, desenvolvido como trabalho académico.
 
 ## 1. Introdução
 
 ### 1.1 Contexto e Justificação
 
-No mercado de estética e bem-estar masculino, a otimização do tempo e a facilidade de agendamento são fatores cruciais para a fidelização de clientes. O controlo manual de marcações, por via de agendas de papel ou aplicações de mensagens descentralizadas, frequentemente resulta em conflitos de horários, perda de histórico e falta de previsibilidade de faturação para os gestores.
+No mercado de estética e bem-estar masculino, a otimização do tempo e a facilidade de agendamento são fatores essenciais para a fidelização de clientes. O controlo manual de marcações, por meio de agendas de papel ou mensagens, frequentemente resulta em conflitos de horários, perda de histórico e falta de previsibilidade para a gestão.
 
-O BarberVibe resolve estes problemas ao centralizar num único ecossistema seguro o autocadastro de clientes, a gestão de serviços e profissionais por parte dos administradores, e o controlo diário de horários individuais para os barbeiros.
+O BarberVibe centraliza, num único ecossistema seguro, o autocadastro de clientes, a gestão de serviços e profissionais pelos administradores e o controlo diário de horários individuais pelos barbeiros.
 
 ### 1.2 Objetivos do Sistema
 
-Para o Cliente: Permitir o registo autónomo, visualização do catálogo de serviços com preços reais e marcação rápida em tempo real.
-
-Para o Barbeiro: Disponibilizar uma visão clara e exclusiva da sua escala de atendimento do dia, permitindo a atualização de status do serviço (Confirmado, Concluído, Cancelado).
-
-Para o Administrador: Fornecer controlo total sobre o catálogo de serviços (CRUD), gestão ativa da equipa de barbeiros (CRUD) e controlo irrestrito sobre todos os horários e registos.
+- Cliente: permitir o registo autônomo, a visualização do catálogo de serviços com valores reais e a marcação rápida e segura.
+- Barbeiro: oferecer uma visão exclusiva da sua agenda e permitir a atualização do status do atendimento (Pendente, Confirmado, Concluído, Cancelado).
+- Administrador: fornecer controle completo sobre o catálogo de serviços (CRUD), a equipa de barbeiros (CRUD) e acesso irrestrito à agenda global.
 
 ## 2. Tecnologias Utilizadas
 
-A aplicação foi estruturada sobre pilhas de tecnologias modernas, estáveis e amplamente adotadas no mercado de trabalho:
+A aplicação foi construída com tecnologias modernas e estáveis:
 
-Framework Back-end: Laravel 12 (PHP 8.2+) utilizando o padrão arquitetural MVC (Model-View-Controller).
-
-Base de Dados: MySQL (ambiente de produção/desenvolvimento local) e SQLite em memória (para a execução ágil de testes automatizados).
-
-Visualização (Front-end): Blade Templates com compilação dinâmica de estilos através do Vite.
-
-Framework de Estilização: Tailwind CSS (com paleta de cores Dark Premium e design totalmente responsivo).
-
-Testes Automatizados: PHPUnit integrado no ecossistema nativo do Laravel.
-
-Controlo de Versão: Git (com histórico detalhado de commits para monitorização do desenvolvimento).
+- Backend: Laravel 13 (PHP 8.3+), arquitetura MVC.
+- Frontend: Blade Templates e Vite.
+- Estilização: Tailwind CSS com tema Dark Premium.
+- Banco de Dados: MySQL para produção/desenvolvimento local e SQLite em memória para testes.
+- Testes: PHPUnit.
+- Controle de versão: Git e GitHub.
 
 ## 3. Modelação da Base de Dados (Relacionamentos)
 
-A estrutura de dados foi projetada no paradigma relacional, otimizando as tabelas para evitar redundância. Para simplificar e tornar as permissões mais seguras, unificámos clientes, barbeiros e administradores na mesma tabela de utilizadores.
+A modelagem relacional foi pensada para garantir integridade e evitar redundância, reunindo clientes, barbeiros e administradores na mesma tabela de utilizadores.
 
-### 3.1 Tabela users (Utilizadores)
+### 3.1 Tabela `users`
 
-Armazena todos os intervenientes do sistema diferenciados pelo atributo role.
+- `id` (PK)
+- `name` (String)
+- `email` (String, unique)
+- `password` (String)
+- `role` (String) - `client`, `barber` ou `admin`
+- `created_at`, `updated_at`
 
-``id`` (PK)
+### 3.2 Tabela `services`
 
-``name`` (String) - Nome do utilizador.
+- `id` (PK)
+- `name` (String)
+- `price` (Decimal 8,2)
+- `duration_minutes` (Integer)
+- `created_at`, `updated_at`
 
-``email`` (String, Unique) - E-mail para login.
+### 3.3 Tabela `appointments`
 
-``password`` (String) - Hash segura da senha do utilizador.
-
-``role`` (String) - Nível de acesso do utilizador: ``'client'``, ``'barber'`` ou ``'admin'``.
-
-``timestamps`` (created_at e updated_at).
-
-### 3.2 Tabela services (Serviços)
-
-Contém os serviços disponibilizados pela barbearia.
-
-``id`` (PK)
-
-``name`` (String) - Nome do serviço (ex: "Corte de Cabelo (Degradê Moderno)").
-
-``price`` (Decimal, 8,2) - Preço em reais.
-
-``duration_minutes`` (Integer) - Tempo estimado para realização.
-
-timestamps.
-
-### 3.3 Tabela appointments (Agendamentos / Marcações)
-
-Entidade central de relacionamento "Muitos-para-Muitos" que conecta clientes, profissionais e serviços.
-
-``id`` (PK)
-
-``client_id`` (FK) - Aponta para users.id (utilizador com perfil 'client').
-
-``barber_id`` (FK) - Aponta para users.id (utilizador com perfil 'barber').
-
-``service_id`` (FK) - Aponta para services.id.
-
-``date_time`` (DateTime) - Data e hora exata da marcação.
-
-``status`` (String) - Estado atual da reserva: ``'pending'``, ``'confirmed'``, ``'completed'`` ou ``'canceled'``.
-
-timestamps.
+- `id` (PK)
+- `client_id` (FK para `users.id`)
+- `barber_id` (FK para `users.id`)
+- `service_id` (FK para `services.id`)
+- `date_time` (DateTime)
+- `status` (String) - `pending`, `confirmed`, `completed` ou `canceled`
+- `created_at`, `updated_at`
 
 ## 4. Funcionalidades e Regras de Negócio Implementadas
 
-O projeto destaca-se pela aplicação rigorosa de validações e regras de segurança de nível profissional:
+### 4.1 Autenticação e Autorização
 
-### 4.1 Autenticação e Autorização Seguro (Middleware)
+- Proteção de rotas com middleware `auth`.
+- Controle de acesso por função (RBAC) para impedir que clientes acessem áreas administrativas.
+- Barbeiros só podem gerenciar agendamentos associados à sua própria agenda.
 
-Proteção de Rotas: Utilização do middleware auth para bloquear acessos anónimos a áreas privadas do sistema.
+### 4.2 Regras de Agendamento
 
-Diferenciação por Função (RBAC): Os controladores e rotas bloqueiam acessos com base no perfil do utilizador:
-
-Clientes comuns recebem erro HTTP 403 (Forbidden) ao tentar aceder a recursos de gestão de funcionários ou serviços.
-
-Barbeiros apenas gerem os agendamentos nos quais estão nominalmente escalados.
-
-### 4.2 Regras de Negócio do Agendamento
-
-Bloqueio do Passado: O sistema impede agendamentos em datas ou horários anteriores ao momento atual.
-
-Horário de Funcionamento: Restrição lógica que apenas aceita marcações dentro do horário comercial da barbearia (Segunda a Sábado, das 09:00 às 19:00).
-
-Prevenção de Choque de Horários: Validação no banco de dados que impede a gravação de um agendamento para um barbeiro que já possua um compromisso ativo no mesmo dia e horário.
+- Bloqueio de agendamentos no passado.
+- Restrição de horário de funcionamento entre 09:00 e 19:00.
+- Prevenção de conflitos de horário para o mesmo barbeiro.
 
 ### 4.3 Integridade Referencial
 
-Ao tentar eliminar um serviço, o sistema valida se existem agendamentos históricos ou ativos associados. Se sim, a exclusão física é bloqueada temporariamente para evitar falhas de integridade na base de dados.
-
-Regra análoga é aplicada ao remover barbeiros do quadro da empresa.
+- Não é possível excluir serviços com agendamentos associados.
+- A remoção de barbeiros também é bloqueada quando existem agendamentos pendentes ou confirmados.
 
 ## 5. Testes Automatizados
 
-Para garantir a robustez e estabilidade do BarberVibe contra falhas de regressão, foi desenvolvida uma suíte completa de testes automatizados de funcionalidade (Feature Tests):
+A suíte de testes valida os principais fluxos de autenticação e agendamento.
 
-### 5.1 Testes de Autenticação (LoginTest.php)
+### 5.1 Testes de Autenticação
 
-Redirecionamento Pós-Login do Cliente: Valida que utilizadores com o papel 'client' são enviados diretamente para o ecrã de marcações pessoal.
+- Redirecionamento de clientes para `appointments.index` após login.
+- Redirecionamento de administradores e barbeiros para `management` após login.
 
-Redirecionamento Pós-Login de Gestão: Garante que administradores e barbeiros entram diretamente no painel de administração geral (/management).
+### 5.2 Testes de Agendamento
 
-### 5.2 Testes de Fluxo de Agendamento (AppointmentTest.php)
+- Bloqueio de acesso de visitantes não autenticados.
+- Criação válida de agendamento para cliente autenticado.
+- Rejeição de agendamento no passado.
+- Rejeição de agendamento fora do horário comercial.
+- Bloqueio de conflito de horário para o mesmo barbeiro.
 
-Bloqueio de Visitantes: Verifica o redirecionamento correto para login se um utilizador não autenticado tentar aceder às marcações.
+### 5.3 Resultado Atual
 
-Agendamento Válido: Valida o fluxo de preenchimento do formulário e inserção bem-sucedida de dados válidos.
+O projeto possui **10 testes** registrados na suíte automatizada.
 
-Bloqueio de Horário Passado: Garante a rejeição automática de agendamentos no passado.
+## 6. Configuração de Contas de Teste
 
-Bloqueio Fora de Horário: Valida a rejeição de marcações fora do expediente (ex: 22h).
+O `DatabaseSeeder` cria as seguintes contas:
 
-Bloqueio de Agenda Duplicada: Confirma o bom funcionamento da regra de prevenção de conflitos de horário.
+- Administrador: `admin@barbervibe.com.br` / `senha123`
+- Barbeiro: `barbeiro@barbervibe.com.br` / `senha123`
+- Cliente: `cliente@barbervibe.com.br` / `senha123`
 
-### 5.3 Resultados obtidos no Terminal
+E também cria serviços iniciais no seed.
 
-O projeto obteve aprovação total na execução da suíte de testes:
+## 7. Manual de Instalação e Execução
 
-```test
-PASS  Tests\Unit\ExampleTest
-PASS  Tests\Feature\AppointmentTest
-PASS  Tests\Feature\Auth\LoginTest
-PASS  Tests\Feature\ExampleTest
+### 7.1 Requisitos
 
-Tests:    10 passed (31 assertions)
-Duration: 1.59s
-```
+- PHP 8.3 ou superior
+- Composer
+- Node.js e npm
 
-## 6. Manual de Instalação e Execução
+### 7.2 Passos
 
-Para rodar a aplicação localmente de forma simples, siga os passos abaixo:
-
-### 6.1 Pré-requisitos
-
-PHP 8.2 ou superior instalado.
-
-Composer.
-
-Node.js e NPM para compilação dos estilos Tailwind CSS.
-
-### 6.2 Passos para Execução
-
-Clonar o Repositório e Instalar Dependências:
+1. Instalar dependências:
 
 ```
 composer install
 npm install
 ```
 
-Configurar as Variáveis de Ambiente:
-Duplique o ficheiro .env.example para .env e configure a sua ligação à base de dados MySQL ou SQLite local:
+2. Configurar o `.env`:
 
-````
-cp .env.example .env
+```
+copy .env.example .env
 php artisan key:generate
-````
+```
 
-
-Executar as Migrações e Alimentar o Banco (Seed):
-Crie as tabelas e insira os utilizadores de teste iniciais (``admin@barbervibe.com.br``, ``barbeiro@barbervibe.com.br`` e ``cliente@barbervibe.com.br`` com a senha ``senha123``):
+3. Executar migrações e seed:
 
 ```
 php artisan migrate --seed
 ```
 
+4. Compilar assets e iniciar o desenvolvimento:
 
-Compilar os Assets de Estilo e Iniciar o Servidor:
 ```
 npm run dev
 ```
-### Em outro terminal, inicie o servidor local:
+
+5. Em outro terminal, iniciar o servidor:
+
 ```
 php artisan serve
 ```
 
+6. Executar a suíte de testes:
 
-Executar a Suíte de Testes:
 ```
 php artisan test
 ```
