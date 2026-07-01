@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\AppointmentController;
 use App\Models\Appointment;
 
 /*
@@ -30,23 +31,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // 4. Rotas Protegidas (Requer login ativo)
 Route::middleware(['auth'])->group(function () {
 
-    // Painel do Cliente (Visualização e agendamentos)
-    Route::get('/appointments', function (Request $request) {
-        $user = $request->user();
-
-        // Se um administrador ou barbeiro tentar aceder aqui, redireciona de forma amigável
-        if ($user && ($user->role === 'admin' || $user->role === 'barber')) {
-            return redirect()->route('management');
-        }
-
-        // Puxa apenas os agendamentos do cliente logado no MySQL
-        $appointments = Appointment::where('client_id', $user->id)
-            ->with(['barber', 'service'])
-            ->latest()
-            ->paginate(10);
-
-        return view('appointments.index', compact('appointments'));
-    })->name('appointments.index');
+    // CRUD e Painel de Agendamentos (Gerido de forma completa pelo AppointmentController)
+    Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
+    Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+    Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
 
     // Painel de Gestão (Administração e escala dos Barbeiros)
     Route::get('/management', function (Request $request) {
